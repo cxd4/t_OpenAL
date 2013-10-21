@@ -1,9 +1,29 @@
+ALuint buffer;
+ALuint source;
+
 const char* AL_source_states[4] = {
     "AL_INITIAL",
     "AL_PLAYING",
     "AL_PAUSED",
     "AL_STOPPED"
 };
+
+void change_volume(ALfloat gain)
+{
+/*
+ * Experimental volume changer.
+ * OpenAL 1.1 specifications standardize the range 0.0 <= gain <= 1.0.
+ * 0.0 is the way to mute and possibly even disable sound processing latency.
+ * 1.0 could be the maximum volume ratio.  Some implementations allow higher.
+ */
+#if (0)
+    alSourcef(source, AL_MIN_GAIN, 0.0F); /* can't have negative gains anyway */
+    alSourcef(source, AL_MAX_GAIN, gain); /* uncertain ... allow gains > 1.0? */
+#endif
+    alListenerf(AL_GAIN, gain);
+    alSourcef(source, AL_GAIN, gain); /* Pretty much overruled by alListener. */
+    return;
+}
 
 void DEBUG_SOURCE_STATE(ALint query)
 {

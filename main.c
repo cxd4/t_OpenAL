@@ -66,9 +66,6 @@ ALboolean initialize_listener(void)
     return AL_TRUE;
 }
 
-ALuint buffer;
-ALuint source;
-
 ALboolean initialize_buffer(void)
 {
     ALenum ALstatus;
@@ -207,6 +204,7 @@ int main(void)
         "H) alSourcePause (hold)\n"\
         "S) alSourceStop\n"\
         "R) alSourceRewind\n"\
+        "V) Re-define the volume coefficient AL_GAIN scale.\n"\
         "Q) Frees RAM, releases the AL context, and quits\n\n");
 
     do
@@ -256,6 +254,13 @@ int main(void)
                     printf("from %s to %s\n", "AL_STOPPED", "AL_INITIAL");
                 alSourceRewind(source);
                 continue;
+            case 'V': {
+                ALfloat gain;
+
+                printf("Enter new volume scale:  ");
+                scanf("%f", &gain);
+                change_volume(gain);
+                continue; }
             case 'Q':
                 goto EXIT;
         };
