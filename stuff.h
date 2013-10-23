@@ -85,6 +85,24 @@ void log_AL_states(void)
     return;
 }
 
+void log_buffer_attributes(void)
+{
+    FILE *out;
+    ALint query;
+
+    out = fopen("BUFFERAT.TXT", "w");
+    alGetBufferi(buffer, AL_FREQUENCY, &query);
+    fprintf(out, "Period  :  %i samples per second\n", query); /* "Hertz" */
+    alGetBufferi(buffer, AL_SIZE, &query);
+    fprintf(out, "Raw size:  %i bytes\n", query);
+    alGetBufferi(buffer, AL_BITS, &query); /* either 8 or 16 b/sample */
+    fprintf(out, "Samples :  %i bits each\n", query);
+    alGetBufferi(buffer, AL_CHANNELS, &query); /* either stereo or mono */
+    fprintf(out, "Channels:  %i\n", query);
+    fclose(out);
+    return;
+}
+
 /*
  * Dependency Walker hates the USER32::ADVAPI32::SHELL32 in late Windows.
  * This dummy function clears the crap up when analyzing dependencies.

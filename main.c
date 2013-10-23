@@ -196,6 +196,7 @@ int main(void)
         return 0;
     }
     alSourceQueueBuffers(source, 1, &buffer);
+    log_buffer_attributes();
 
     printf(
         "OpenAL test keys:  \n"\
