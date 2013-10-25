@@ -8,6 +8,47 @@ const char* AL_source_states[4] = {
     "AL_STOPPED"
 };
 
+ALCdevice* init_AL_device(void)
+{
+    ALboolean success;
+    ALCdevice* device;
+
+/*
+ * Clear the OpenAL internal error flag.
+ *
+ * For performance reasons, OpenAL does not check if the last AL call failed.
+ * It actually checks if *ANY* OpenAL API call failed since last error check.
+ *
+ * Therefore, we need to guarantee this is zeroed to begin with.
+ */
+    alGetError();
+#if (0)
+    success = alutInit(NULL, 0);
+    if (success == AL_FALSE)
+    {
+        printf("Failed to init ALUT.\n");
+        return NULL;
+    }
+#endif
+    device = alcOpenDevice(NULL); /* open default device */
+    if (device == NULL) /* Plug in some headphones or something! */
+        printf("Unable to detect a sound device.\n");
+    return (device);
+}
+
+ALCboolean finish_AL_context(ALCdevice* device)
+{
+    ALboolean success;
+#if (0)
+    alutExit(); /* to-do:  Do we really need ALUT? */
+#endif
+    success  = alcCloseDevice(device);
+    if (success == ALC_FALSE)
+        printf("Failed to close AL context device.\n");
+    success &= alcMakeContextCurrent(NULL);
+    return (success);
+}
+
 void change_volume(ALfloat gain)
 {
 /*

@@ -113,14 +113,6 @@ ALboolean initialize_source(void)
     ALenum ALstatus;
     ALint query;
 
-/*
- * Clear the OpenAL internal error flag.
- *
- * For performance reasons, OpenAL does not check if the last AL call failed.
- * It actually checks if *ANY* OpenAL API call failed since last error check.
- *
- * Therefore, we need to guarantee this is zeroed to begin with.
- */
     ALstatus = alGetError(); /* Each error check zeroes error status. */
     if (ALstatus != AL_NO_ERROR)
         printf("Warning:  Request initialized since a prior error.\n");
@@ -179,13 +171,22 @@ ALboolean initialize_source(void)
 int main(void)
 {
     ALboolean success;
+    ALCboolean passed;
+    ALCdevice* device;
+    ALCcontext* context;
 
-    alGetError();
-    success = alutInit(NULL, 0);
-    if (success == AL_FALSE)
+    device = init_AL_device();
+    context = alcCreateContext(device, NULL);
+    if (context == NULL)
     {
-        printf("Failed to init ALUT.\n");
-        return 1;
+        printf("Failed to initialize AL.\n");
+        return 0;
+    }
+    passed = alcMakeContextCurrent(context);
+    if (passed == ALC_FALSE)
+    {
+        printf("Failed to attach DC.\n");
+        return 0;
     }
 
     log_AL_states();
@@ -270,6 +271,9 @@ EXIT:
     alSourceUnqueueBuffers(source, 1, &buffer);
     alDeleteSources(1, &source);
     alDeleteBuffers(1, &buffer);
-    alutExit();
+
+    passed = finish_AL_context(device);
+    if (passed == ALC_FALSE)
+        printf("Failed to invalidate current ALC.\n");
     return 0;
 }
