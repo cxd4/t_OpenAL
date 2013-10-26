@@ -95,16 +95,6 @@ ALboolean initialize_buffer(void)
     alutLoadWAVFile((ALbyte *)"test.wav", &format, &data, &size, &freq, &loop);
     alBufferData(buffer, format, data, size, freq);
     alutUnloadWAV(format, data, size, freq);
-
-    alSourcei(source, AL_BUFFER, buffer);
-    alSourcei(source, AL_LOOPING, AL_TRUE);
-    alSourcef(source, AL_PITCH, 1.0F);
-    ALstatus = alGetError();
-    if (ALstatus != AL_NO_ERROR)
-    {
-        printf("alBuffer\n%s\n\n", AL_errors[ALstatus]);
-        return AL_FALSE;
-    }
     return AL_TRUE;
 }
 
@@ -192,6 +182,9 @@ int main(void)
         printf("Fatal error.  Stopping.\n\n");
         return 0;
     }
+    alSourcei(source, AL_BUFFER, buffer);
+    alSourcei(source, AL_LOOPING, AL_TRUE);
+    alSourcef(source, AL_PITCH, 1.0F);
     alSourceQueueBuffers(source, NUM_BUFFERS, &buffer);
     log_buffer_attributes();
 
@@ -202,6 +195,7 @@ int main(void)
         "H) alSourcePause (hold)\n"\
         "S) alSourceStop\n"\
         "R) alSourceRewind\n"\
+        "F) Shift the pitch (or frequency) by FP coefficient.\n"\
         "V) Re-define the volume coefficient AL_GAIN scale.\n"\
         "Q) Frees RAM, releases the AL context, and quits\n\n");
 
@@ -252,6 +246,14 @@ int main(void)
                     printf("from %s to %s\n", "AL_STOPPED", "AL_INITIAL");
                 alSourceRewind(source);
                 continue;
+            case 'F': { /* Accelerate/decelerate frequency by multiplier. */
+                ALfloat period;
+
+                printf("Enter pitch shift coefficient:  ");
+                scanf("%f", &period);
+                alSourcef(source, AL_PITCH, period);
+                continue;
+            }
             case 'V': {
                 ALfloat gain;
 
