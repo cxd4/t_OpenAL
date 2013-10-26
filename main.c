@@ -154,6 +154,13 @@ ALboolean initialize_source(void)
     return AL_TRUE;
 }
 
+const ALCint attrList[] = {
+    ALC_FREQUENCY, 44100, /* to-do:  is this a conversion base or absolute? */
+    ALC_REFRESH, 60, /* to-do:  20?  check default?  how much? */
+    ALC_SYNC, ALC_FALSE, /* to-do:  thread-safe audio with alcProcessContext? */
+    ALC_STEREO_SOURCES, NUM_SOURCES,
+    ALC_INVALID, ALC_INVALID
+};
 int main(void)
 {
     ALboolean success;
@@ -162,7 +169,7 @@ int main(void)
     ALCcontext* context;
 
     device = init_AL_device();
-    context = alcCreateContext(device, NULL);
+    context = alcCreateContext(device, attrList);
     if (context == NULL)
     {
         printf("Failed to initialize AL.\n");
