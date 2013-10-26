@@ -106,6 +106,8 @@ void log_AL_states(void)
     const ALchar* version    = alGetString(AL_VERSION);
     const ALchar* renderer   = alGetString(AL_RENDERER);
     const ALchar* extensions = alGetString(AL_EXTENSIONS);
+    const ALCchar* devices = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+    const ALCchar* capture = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
 
     out = fopen("ALSTATES.TXT", "w");
     fprintf(out, "Global OpenAL Context States\n");
@@ -116,7 +118,7 @@ void log_AL_states(void)
     fprintf(out, "AL_EXTENSIONS:\n");
 /* ... The problem with this:  It is a list, space-separated. */
     for (i = 0; ; i++)
-    {
+    { /* 80-byte MS-DOS text lines...might be too short for some output? :P */
         char line[80] = "  * "; /* list bulleting */
 
         j = 4;
@@ -131,6 +133,37 @@ void log_AL_states(void)
     fprintf(out, "AL_DOPPLER_FACTOR:  %f\n", alGetFloat(AL_DOPPLER_FACTOR));
     fprintf(out, "AL_SPEED_OF_SOUND:  %f\n", alGetFloat(AL_SPEED_OF_SOUND));
     fprintf(out, "AL_DISTANCE_MODEL:  %i\n", alGetInteger(AL_DISTANCE_MODEL));
+    fprintf(out, "\n");
+    fprintf(out, "ALC_DEFAULT_DEVICE_SPECIFIER:\n    \"%s\"\n",
+        alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER));
+    fprintf(out, "ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER:\n    \"%s\"\n",
+        alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
+
+/*
+ * enumerations mode
+ * The following two tokens for alcGetString behave differently with a NULL
+ * (unspecified) device pointer (for the first argument of the method call).
+ *
+ * The trick with printing these lists:
+ *     1.  Each listed sound output device is separated by a null byte.
+ *     2.  The end of the list of device name strings is marked by TWO nulls.
+ */
+    fprintf(out, "ALC_DEVICE_SPECIFIER (enumerations):\n");
+    for (i = 0; devices[i] != '\0'; i++)
+    {
+        fputs("  * ", out); /* line bulleting */
+        while (devices[i] != '\0')
+            fputc(devices[i++], out);
+        fputc('\n', out);
+    }
+    fprintf(out, "ALC_CAPTURE_DEVICE_SPECIFIER (enumerations):\n");
+    for (i = 0; capture[i] != '\0'; i++)
+    {
+        fputs("  * ", out); /* line bulleting */
+        while (capture[i] != '\0')
+            fputc(capture[i++], out);
+        fputc('\n', out);
+    }
     fclose(out);
     return;
 }
