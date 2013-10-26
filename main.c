@@ -6,6 +6,7 @@
 #include <al/al.h>
 #include <al/alc.h>
 #include <al/alut.h>
+#include <al/xram.h>
 
 /*
  * Debugging, extra features, run-time user manipulations of OpenAL, etc.
@@ -194,6 +195,8 @@ int main(void)
     alSourcef(source, AL_PITCH, 1.0F);
     alSourceQueueBuffers(source, NUM_BUFFERS, &buffer);
     log_buffer_attributes();
+
+    setup_EAX_RAM();
 
     printf(
         "OpenAL test keys:  \n"\

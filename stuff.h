@@ -186,6 +186,81 @@ void log_buffer_attributes(void)
     return;
 }
 
+void setup_EAX_RAM(void)
+{
+    EAXSetBufferMode g_eaxSetMode;
+    EAXGetBufferMode g_eaxGetMode;
+    ALint iRAMSizeMB, iRAMFreeMB;
+    ALenum g_eXRAMSize, g_eXRAMFree;
+    ALenum g_eXRAMAuto, g_eXRAMHardware, g_eXRAMAccessible;
+    const ALboolean have_XRAM = alIsExtensionPresent("EAX-RAM");
+
+    if (have_XRAM == AL_FALSE)
+        return;
+
+    printf("Found X-RAM support on sound card.\n");
+    g_eXRAMSize = alGetEnumValue("AL_EAX_RAM_SIZE");
+    g_eXRAMFree = alGetEnumValue("AL_EAX_RAM_FREE");
+
+    iRAMSizeMB = alGetInteger(g_eXRAMSize) / (1024*1024);
+    iRAMFreeMB = alGetInteger(g_eXRAMFree) / (1024*1024);
+    printf("Available X-RAM:  %i of %i MiB.\n", iRAMFreeMB, iRAMSizeMB);
+
+    g_eXRAMAuto = alGetEnumValue("AL_STORAGE_AUTOMATIC");
+    g_eXRAMHardware = alGetEnumValue("AL_STORAGE_HARDWARE");
+    g_eXRAMAccessible = alGetEnumValue("AL_STORAGE_ACCESSIBLE");
+    g_eaxGetMode = (EAXGetBufferMode)alGetProcAddress("EAXGetBufferMode");
+    if (g_eaxGetMode == NULL)
+        printf("Failed to detect extension:  %s.\n", "EAXGetBufferMode");
+    else
+    {
+        const ALenum mode = g_eaxGetMode(buffer, NULL);
+
+        if (mode == g_eXRAMAuto)
+            printf("AL buffer was %s (%i).\n",
+                "AL_STORAGE_AUTOMATIC", mode);
+        else if (mode == g_eXRAMHardware)
+            printf("AL buffer was %s (%i).\n",
+                "AL_STORAGE_HARDWARE", mode);
+        else if (mode == g_eXRAMAccessible)
+            printf("AL buffer was %s (%i).\n",
+                "AL_STORAGE_ACCESSIBLE", mode);
+        else /* hopefully impossible? */
+            printf("Unknown hardware buffering mode!\n%i\n", mode);
+    }
+
+    g_eaxSetMode = (EAXSetBufferMode)alGetProcAddress("EAXSetBufferMode");
+    if (g_eaxSetMode == NULL)
+        printf("Failed to detect extension:  %s.\n", "EAXSetBufferMode");
+    else
+    {
+        ALboolean success;
+        int use_XRAM;
+
+/*
+ * Use the most accessible RAM for N64 audio streaming.
+ * Streaming is generally antagonistic for XRAM support, so on most
+ * implementations, this will probably force CPU system memory for storage.
+ */
+        success = g_eaxSetMode(NUM_BUFFERS, &buffer, g_eXRAMAccessible);
+        if (success == AL_FALSE)
+        {
+            printf("Error controlling buffer EAX!\n");
+            return;
+        }
+/*
+ * Force EAX-RAM audio memory for better playback quality (and hopefully
+ * faster performance, but not necessarily for streaming N64 audio off DRAM).
+ */
+        success = g_eaxSetMode(NUM_BUFFERS, &buffer, g_eXRAMHardware);
+        if (success == AL_FALSE)
+            printf("Error setting buffer EAX!\n");
+        else
+            printf("EAX audio memory usage has now been enabled.\n");
+    }
+    return;
+}
+
 /*
  * Dependency Walker hates the USER32::ADVAPI32::SHELL32 in late Windows.
  * This dummy function clears the crap up when analyzing dependencies.
