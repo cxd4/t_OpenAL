@@ -1,6 +1,9 @@
 ALuint buffer;
 ALuint source;
 
+#define NUM_BUFFERS     1
+#define NUM_SOURCES     1
+
 const char* AL_source_states[4] = {
     "AL_INITIAL",
     "AL_PLAYING",
@@ -36,16 +39,22 @@ ALCdevice* init_AL_device(void)
     return (device);
 }
 
-ALCboolean finish_AL_context(ALCdevice* device)
+ALCboolean finish_AL_context(void)
 {
+    ALCcontext* context;
+    ALCdevice* device;
     ALboolean success;
+
+    alDeleteSources(NUM_SOURCES, &source); /* can be deleted any time */
+    alDeleteBuffers(NUM_BUFFERS, &buffer); /* cannot delete if attached */
 #if (0)
     alutExit(); /* to-do:  Do we really need ALUT? */
 #endif
-    success  = alcCloseDevice(device);
-    if (success == ALC_FALSE)
-        printf("Failed to close AL context device.\n");
-    success &= alcMakeContextCurrent(NULL);
+    context = alcGetCurrentContext();
+    device = alcGetContextsDevice(context);
+    success  = alcMakeContextCurrent(NULL);
+    alcDestroyContext(context);
+    success &= alcCloseDevice(device);
     return (success);
 }
 

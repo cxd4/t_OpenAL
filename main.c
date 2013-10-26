@@ -79,7 +79,7 @@ ALboolean initialize_buffer(void)
     if (ALstatus != AL_NO_ERROR)
         printf("alBuffer\n%s\n\n", AL_errors[ALstatus]);
 
-    alGenBuffers(1, &buffer);
+    alGenBuffers(NUM_BUFFERS, &buffer);
     ALstatus = alGetError();
     if (ALstatus != AL_NO_ERROR)
     {
@@ -117,11 +117,7 @@ ALboolean initialize_source(void)
     if (ALstatus != AL_NO_ERROR)
         printf("Warning:  Request initialized since a prior error.\n");
 
-/*
- * The above attributes may also be set for a source.
- * Unlike the listener object, source objects are dynamic.  Allocate them.
- */
-    alGenSources(1, &source);
+    alGenSources(NUM_SOURCES, &source);
     ALstatus = alGetError();
     if (ALstatus != AL_NO_ERROR)
     {
@@ -190,13 +186,13 @@ int main(void)
     }
 
     log_AL_states();
-    success = initialize_listener() & initialize_source() & initialize_buffer();
+    success = initialize_listener() & initialize_buffer() & initialize_source();
     if (success == AL_FALSE)
     {
         printf("Fatal error.  Stopping.\n\n");
         return 0;
     }
-    alSourceQueueBuffers(source, 1, &buffer);
+    alSourceQueueBuffers(source, NUM_BUFFERS, &buffer);
     log_buffer_attributes();
 
     printf(
@@ -268,11 +264,8 @@ int main(void)
         };
     } while (success == success);
 EXIT:
-    alSourceUnqueueBuffers(source, 1, &buffer);
-    alDeleteSources(1, &source);
-    alDeleteBuffers(1, &buffer);
-
-    passed = finish_AL_context(device);
+    alSourceUnqueueBuffers(source, NUM_BUFFERS, &buffer);
+    passed = finish_AL_context();
     if (passed == ALC_FALSE)
         printf("Failed to invalidate current ALC.\n");
     return 0;
