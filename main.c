@@ -170,6 +170,7 @@ int main(void)
     ALCcontext* context;
 
     device = init_AL_device();
+    log_AL_device_states(device);
     context = alcCreateContext(device, attrList);
     if (context == NULL)
     {
@@ -197,7 +198,6 @@ int main(void)
     log_buffer_attributes();
 
     setup_EAX_RAM();
-
     printf(
         "OpenAL test keys:  \n"\
         "\n"\

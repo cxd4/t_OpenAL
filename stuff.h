@@ -4,6 +4,8 @@ ALuint source;
 #define NUM_BUFFERS     1
 #define NUM_SOURCES     1
 
+#define BUFFER_SIZE     4410
+
 const char* AL_source_states[4] = {
     "AL_INITIAL",
     "AL_PLAYING",
@@ -100,6 +102,7 @@ void DEBUG_SOURCE_STATE(ALint query)
 void log_AL_states(void)
 {
     FILE* out;
+    ALCint data;
     register int i, j;
     const ALCboolean all = alcIsExtensionPresent(NULL, "ALC_ENUMERATE_ALL_EXT");
     const ALchar* vendor     = alGetString(AL_VENDOR);
@@ -177,6 +180,53 @@ void log_AL_states(void)
         fputc('\n', out);
     }
 SKIP_ENUM_ALL_DEVICES:
+    fprintf(out, "\n");
+    alcGetIntegerv(NULL, ALC_MAJOR_VERSION, sizeof(ALCint), &data);
+    fprintf(out, "ALC_MAJOR_VERSION:  %i\n", data);
+    alcGetIntegerv(NULL, ALC_MINOR_VERSION, sizeof(ALCint), &data);
+    fprintf(out, "ALC_MAJOR_VERSION:  %i\n", data);
+    fclose(out);
+    return;
+}
+void log_AL_device_states(ALCdevice* device)
+{
+    FILE* out;
+    ALCint data;
+    register int i;
+    const ALCchar* exstr = alcGetString(device, ALC_EXTENSIONS);
+
+    out = fopen("DCSTATES.TXT", "w");
+    fprintf(out, "OpenAL Device Context States\n");
+    fprintf(out, "\n");
+    fprintf(out, "ALC_CAPTURE_DEVICE_SPECIFIER:\n    \"%s\"\n",
+        alcGetString(device, ALC_CAPTURE_DEVICE_SPECIFIER));
+    fprintf(out, "ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER:\n    \"%s\"\n",
+        alcGetString(device, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
+    fprintf(out, "ALC_DEFAULT_DEVICE_SPECIFIER:\n    \"%s\"\n",
+        alcGetString(device, ALC_DEFAULT_DEVICE_SPECIFIER));
+    fprintf(out, "ALC_DEVICE_SPECIFIER:\n    \"%s\"\n",
+        alcGetString(device, ALC_DEVICE_SPECIFIER));
+
+    fprintf(out, "ALC_EXTENSIONS:\n");
+    for (i = 0; exstr[i] != '\0'; i++)
+    {
+        fputs("  * ", out); /* list bulleting */
+        while (exstr[i] != ' ' && exstr[i] != '\0')
+            fputc(exstr[i++], out);
+        fputc('\n', out);
+    }
+
+    fprintf(out, "\n");
+    alcGetIntegerv(device, ALC_ATTRIBUTES_SIZE, 1, &data);
+    fprintf(out, "ALC_ATTRIBUTES_SIZE:  %i\n", data);
+    alcGetIntegerv(device, ALC_ALL_ATTRIBUTES, 1, &data);
+    fprintf(out, "ALC_ALL_ATTRIBUTES :  %i\n", data);
+    alcGetIntegerv(device, ALC_MAJOR_VERSION, 1, &data);
+    fprintf(out, "ALC_MAJOR_VERSION  :  %i\n", data);
+    alcGetIntegerv(device, ALC_MINOR_VERSION, 1, &data);
+    fprintf(out, "ALC_MINOR_VERSION  :  %i\n", data);
+    alcGetIntegerv(device, ALC_CAPTURE_SAMPLES, 1, &data);
+    fprintf(out, "ALC_CAPTURE_SAMPLES:  %i\n", data);
     fclose(out);
     return;
 }
