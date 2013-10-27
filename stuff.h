@@ -184,7 +184,7 @@ SKIP_ENUM_ALL_DEVICES:
     alcGetIntegerv(NULL, ALC_MAJOR_VERSION, sizeof(ALCint), &data);
     fprintf(out, "ALC_MAJOR_VERSION:  %i\n", data);
     alcGetIntegerv(NULL, ALC_MINOR_VERSION, sizeof(ALCint), &data);
-    fprintf(out, "ALC_MAJOR_VERSION:  %i\n", data);
+    fprintf(out, "ALC_MINOR_VERSION:  %i\n", data);
     fclose(out);
     return;
 }
