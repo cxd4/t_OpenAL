@@ -13,7 +13,6 @@ const char* AL_source_states[4] = {
 
 ALCdevice* init_AL_device(void)
 {
-    ALboolean success;
     ALCdevice* device;
 
 /*
@@ -102,6 +101,7 @@ void log_AL_states(void)
 {
     FILE* out;
     register int i, j;
+    const ALCboolean all = alcIsExtensionPresent(NULL, "ALC_ENUMERATE_ALL_EXT");
     const ALchar* vendor     = alGetString(AL_VENDOR);
     const ALchar* version    = alGetString(AL_VERSION);
     const ALchar* renderer   = alGetString(AL_RENDERER);
@@ -140,6 +140,18 @@ void log_AL_states(void)
         alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
 
 /*
+ * Unlike the prior OpenAL 1.0 specification by Loki Software, the OpenAL 1.1
+ * specification guarantees support for ALC_ENUMERATION_EXT.  This is not,
+ * however, sufficient, to enumerate ALL possible sound devices in every case
+ * that the newer ALC_ENUMERATE_ALL_EXT extension may encompass.
+ */
+    if (all == ALC_FALSE)
+    {
+        printf("To-do:  Revert to older enumeration model?\n");
+        goto SKIP_ENUM_ALL_DEVICES;
+    }
+
+/*
  * enumerations mode
  * The following two tokens for alcGetString behave differently with a NULL
  * (unspecified) device pointer (for the first argument of the method call).
@@ -164,6 +176,7 @@ void log_AL_states(void)
             fputc(capture[i++], out);
         fputc('\n', out);
     }
+SKIP_ENUM_ALL_DEVICES:
     fclose(out);
     return;
 }
@@ -235,7 +248,7 @@ void setup_EAX_RAM(void)
     else
     {
         ALboolean success;
-        int use_XRAM;
+     /* int use_XRAM; // user option whether to use XRAM? (to-do) */
 
 /*
  * Use the most accessible RAM for N64 audio streaming.
